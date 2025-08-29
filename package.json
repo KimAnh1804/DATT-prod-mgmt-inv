@@ -1,0 +1,28 @@
+{
+  "name": "inventory-management-system",
+  "version": "1.0.0",
+  "description": "Hệ thống quản lý đơn hàng và dự đoán tồn kho",
+  "scripts": {
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm start",
+    "seed": "cd backend && npm run seed",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "keywords": [
+    "inventory",
+    "management",
+    "react",
+    "nodejs"
+  ],
+  "author": "Student CNTT",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0"
+  }
+}

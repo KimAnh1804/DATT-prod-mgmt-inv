@@ -19,7 +19,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" })
     }
 
-    // Kiểm tra mật khẩu
+    // Kiểm tra mật khẩu  
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" })
@@ -38,9 +38,9 @@ router.post("/login", async (req, res) => {
         role: user.role,
       },
     })
-  } catch (error) {
+  } catch (error) { 
     console.error("Login error:", error)
-    res.status(500).json({ message: "Server error" })
+    res.status(500).json({ message: "Server error" }) 
   }
 })
 

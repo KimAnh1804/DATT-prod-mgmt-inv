@@ -10,8 +10,11 @@ import {
   Title,
   Tooltip,
   Legend,
+  ArcElement,
+  PointElement,
+  LineElement,
 } from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 
 ChartJS.register(
   CategoryScale,
@@ -19,7 +22,10 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement
 );
 
 interface MonthlyStat {
@@ -83,6 +89,78 @@ interface ReportData {
 }
 
 const Reports: React.FC = () => {
+  // Remove overflow from parent container
+  useEffect(() => {
+    const mainContent = document.querySelector("main");
+    if (mainContent) {
+      mainContent.style.overflow = "visible";
+      return () => {
+        mainContent.style.overflow = "auto";
+      };
+    }
+  }, []);
+
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+    },
+  };
+
+  const getMonthlyRevenueData = () => {
+    const labels = reportData.monthlyStats.map((stat) => stat.month);
+    return {
+      labels,
+      datasets: [
+        {
+          label: "Doanh thu theo tháng",
+          data: reportData.monthlyStats.map((stat) => stat.revenue),
+          backgroundColor: "rgba(53, 162, 235, 0.5)",
+        },
+      ],
+    };
+  };
+
+  const getTopProductsData = () => {
+    return {
+      labels: reportData.topProducts.map((product) => product.name),
+      datasets: [
+        {
+          label: "Số lượng bán ra",
+          data: reportData.topProducts.map((product) => product.totalSold),
+          backgroundColor: [
+            "rgba(255, 99, 132, 0.5)",
+            "rgba(54, 162, 235, 0.5)",
+            "rgba(255, 206, 86, 0.5)",
+            "rgba(75, 192, 192, 0.5)",
+            "rgba(153, 102, 255, 0.5)",
+          ],
+        },
+      ],
+    };
+  };
+
+  const getInventoryData = () => {
+    const { import: imports, export: exports } = reportData.inventoryStats;
+    return {
+      labels: ["Nhập kho", "Xuất kho"],
+      datasets: [
+        {
+          label: "Số lượng giao dịch",
+          data: [imports.totalTransactions, exports.totalTransactions],
+          backgroundColor: [
+            "rgba(75, 192, 192, 0.5)",
+            "rgba(255, 99, 132, 0.5)",
+          ],
+        },
+      ],
+    };
+  };
+
   const [reportData, setReportData] = useState<ReportData>({
     totalOrders: 0,
     totalRevenue: 0,
@@ -194,7 +272,36 @@ const Reports: React.FC = () => {
         url += `?startDate=${dateFilter.startDate}&endDate=${dateFilter.endDate}`;
       }
 
-      const response = await fetch(url, {
+      // First get the detailed order data
+      const ordersResponse = await fetch(
+        `http://localhost:5000/api/orders${
+          dateFilter.startDate && dateFilter.endDate
+            ? `?startDate=${dateFilter.startDate}&endDate=${dateFilter.endDate}`
+            : ""
+        }`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!ordersResponse.ok) {
+        throw new Error("Failed to fetch order details for export");
+      }
+
+      const orderData = await ordersResponse.json();
+
+      // Then export with detailed data
+      let exportUrl = url;
+      if (exportUrl.includes("?")) {
+        exportUrl += "&";
+      } else {
+        exportUrl += "?";
+      }
+      exportUrl += `includeDetails=true`;
+
+      const response = await fetch(exportUrl, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -425,8 +532,84 @@ const Reports: React.FC = () => {
         </div>
       </div>
 
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Products */}
+        {/* Monthly Revenue Chart */}
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Doanh thu theo tháng
+          </h2>
+          <div className="h-[400px]">
+            <Bar options={chartOptions} data={getMonthlyRevenueData()} />
+          </div>
+        </div>
+
+        {/* Top Products Chart */}
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Top sản phẩm bán chạy
+          </h2>
+          <div className="h-[400px]">
+            <Bar options={chartOptions} data={getTopProductsData()} />
+          </div>
+        </div>
+
+        {/* Inventory Statistics */}
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Thống kê tồn kho
+          </h2>
+          <div className="h-[400px]">
+            <Pie options={chartOptions} data={getInventoryData()} />
+          </div>
+        </div>
+
+        {/* Low Stock Products */}
+        <div className="bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            Sản phẩm sắp hết hàng
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tên sản phẩm
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tồn kho
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ngưỡng cảnh báo
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {reportData.lowStockProducts.map((product, index) => (
+                  <tr
+                    key={index}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {product.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.stock} {product.unit}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {product.lowStockThreshold} {product.unit}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* List Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top Products List */}
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
             Sản phẩm bán chạy
@@ -458,7 +641,7 @@ const Reports: React.FC = () => {
           </div>
         </div>
 
-        {/* Monthly Stats */}
+        {/* Monthly Stats List */}
         <div className="bg-white shadow-lg rounded-lg p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-6">
             Thống kê theo tháng

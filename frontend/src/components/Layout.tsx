@@ -3,7 +3,7 @@
 import type React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logo from "../assets/ivn-logo.svg.png";
 
 interface LayoutProps {
@@ -11,9 +11,18 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  // Ensure scrolling works properly
+  useEffect(() => {
+    document.body.style.overflow = "auto";
+    document.body.style.height = "auto";
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.height = "";
+    };
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const handleLogout = () => {
@@ -22,145 +31,58 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   const menuItems = [
-    {
-      path: "/",
-      label: "Dashboard",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/products",
-      label: "Sản phẩm",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/orders",
-      label: "Đơn hàng",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/inventory",
-      label: "Nhập/Xuất kho",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-          />
-        </svg>
-      ),
-    },
-    {
-      path: "/reports",
-      label: "Báo cáo",
-      icon: (
-        <svg
-          className="w-5 h-5"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
-      ),
-    },
+    { path: "/", label: "Dashboard" },
+    { path: "/products", label: "Sản phẩm" },
+    { path: "/orders", label: "Đơn hàng" },
+    { path: "/inventory", label: "Nhập/Xuất kho" },
+    { path: "/reports", label: "Báo cáo" },
   ];
-
-  // if (user?.role === "admin") {
-  //   menuItems.push({ path: "/users", label: "Quản lý người dùng", icon: "👥" })
-  // }
 
   return (
     <div className="min-h-screen bg-blue-50/30">
       {/* Header */}
-      {/* Header */}
-      <header className="bg-gray-500 border-b border-gray-500/20">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gray-500 border-b border-gray-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
+            {/* Logo + title */}
             <div className="flex items-center space-x-3">
               <img src={logo} alt="IVN Logo" className="h-12 w-auto" />
               <h1 className="text-2xl font-semibold text-white">
                 Initation Việt Nam - Quản lý sản phẩm & đơn hàng
               </h1>
             </div>
+
+            {/* Logout */}
             <div className="relative">
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 text-white hover:text-red-100 transition-colors duration-200 focus:outline-none py-2 px-4 rounded-lg hover:bg-red-500/20"
+                className="flex items-center space-x-3 text-white hover:text-red-100 transition-all duration-200 focus:outline-none py-3 px-5 rounded-lg hover:bg-red-500/20 hover:scale-105"
               >
-                <span className="text-sm font-medium">Đăng xuất</span>
                 <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
+                  className="w-6 h-6"
                   fill="none"
                   stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
+                    strokeWidth="2"
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
+                <span className="text-base font-semibold">Đăng xuất</span>
               </button>
             </div>
           </div>
         </div>
-      </header>{" "}
-      <div className="flex relative">
+      </header>
+
+      {/* Spacer cho header */}
+      <div className="h-[73px]"></div>
+
+      <div className="flex">
         {/* Sidebar */}
         <nav className="w-64 bg-white border-r border-blue-100 fixed top-[73px] left-0 bottom-0 overflow-y-auto">
           <div className="py-6">
@@ -180,7 +102,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                         : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                     }`}
                   >
-                    <span className="text-lg">{item.icon}</span>
                     <span>{item.label}</span>
                   </Link>
                 </li>
@@ -189,7 +110,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </nav>
 
-        {/* Main Content */}
+        {/* Main content */}
         <main className="flex-1 ml-64 p-8">{children}</main>
       </div>
     </div>

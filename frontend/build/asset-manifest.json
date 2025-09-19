@@ -1,13 +1,14 @@
 {
   "files": {
-    "main.css": "/static/css/main.1f90aa88.css",
-    "main.js": "/static/js/main.6378a426.js",
+    "main.css": "/static/css/main.b540d608.css",
+    "main.js": "/static/js/main.01012479.js",
+    "static/media/ivn-logo.svg.png": "/static/media/ivn-logo.svg.28a568c03e58b2eba534.png",
     "index.html": "/index.html",
-    "main.1f90aa88.css.map": "/static/css/main.1f90aa88.css.map",
-    "main.6378a426.js.map": "/static/js/main.6378a426.js.map"
+    "main.b540d608.css.map": "/static/css/main.b540d608.css.map",
+    "main.01012479.js.map": "/static/js/main.01012479.js.map"
   },
   "entrypoints": [
-    "static/css/main.1f90aa88.css",
-    "static/js/main.6378a426.js"
+    "static/css/main.b540d608.css",
+    "static/js/main.01012479.js"
   ]
 }
